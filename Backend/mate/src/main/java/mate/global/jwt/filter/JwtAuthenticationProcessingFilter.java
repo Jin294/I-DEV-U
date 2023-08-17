@@ -1,9 +1,11 @@
 package mate.global.jwt.filter;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mate.domain.user.User;
+import mate.global.exception.NotFoundException;
 import mate.global.jwt.service.JwtService;
 import mate.global.jwt.util.PasswordUtil;
 import mate.repository.user.UserRepository;
@@ -13,6 +15,7 @@ import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMap
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -20,6 +23,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 /**
  * Jwt 인증 필터
@@ -41,9 +46,11 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     private static final String NO_CHECK_URL = "/user/login"; // "/login"으로 들어오는 요청은 Filter 작동 X
     private static final String NO_KAKAO_URL = "/user/kakaologin"; // "/login"으로 들어오는 요청은 Filter 작동 X
 
+
     private final JwtService jwtService;
     private final UserRepository userRepository;
 //    private final RedisService redisService;
+
 
     private GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
 
@@ -62,6 +69,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         String refreshToken = jwtService.extractRefreshToken(request)
                 .filter(jwtService::isTokenValid)
                 .orElse(null);
+        System.out.println(refreshToken);
+
 
         // 리프레시 토큰이 요청 헤더에 존재했다면, 사용자가 AccessToken이 만료되어서
         // RefreshToken까지 보낸 것이므로 리프레시 토큰이 DB의 리프레시 토큰과 일치하는지 판단 후,

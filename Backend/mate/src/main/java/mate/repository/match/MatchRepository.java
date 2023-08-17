@@ -2,6 +2,7 @@ package mate.repository.match;
 
 import java.util.List;
 
+import mate.domain.user.UserGender;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -31,9 +32,9 @@ public interface MatchRepository extends JpaRepository<MatchAnswer, Integer> {
 	// 내가 원하는 상대방에 관한 설문을 바탕으로 상대방 유저의 설문과 비교함
 	@Query(
 		"SELECT ma.user.idx as userIdx, ma.user.nickname as nickname, ROUND((COUNT(*) / :size) * 100) AS percent, ma.user.name as name " +
-			"FROM MatchAnswer ma " +
-			"WHERE ma.tag IN (:tag) and (ma.surveyIdx != 4 and ma.surveyIdx != 5 and ma.surveyIdx != 6) " +
+			"FROM MatchAnswer ma join MatchUser mu ON mu.user.idx = ma.user.idx " +
+			"WHERE ma.tag IN (:tag) and (ma.surveyIdx != 4 and ma.surveyIdx != 5 and ma.surveyIdx != 6) and (ma.user.gender != :gender) " +
 			"GROUP BY ma.user.idx " +
 			"ORDER BY percent DESC")
-	List<Object> listMatchUser(@Param("tag") List<String> tag, @Param("size") long size);
+	List<Object> listMatchUser(@Param("tag") List<String> tag, @Param("size") long size, @Param("gender") UserGender gender);
 }

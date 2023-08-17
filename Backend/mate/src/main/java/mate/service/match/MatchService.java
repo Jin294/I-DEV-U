@@ -5,26 +5,25 @@ import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
-import mate.domain.basic.BasicAnswer;
-import mate.dto.match.MatchDetailDto;
-import mate.repository.user.BasicRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mate.domain.basic.BasicAnswer;
 import mate.domain.match.MatchAnswer;
 import mate.domain.match.MatchUser;
 import mate.domain.user.User;
+import mate.dto.match.MatchDetailDto;
 import mate.dto.match.MatchDto;
 import mate.dto.match.MatchSurvey;
 import mate.dto.user.SurveyResult;
 import mate.repository.match.MatchRepository;
 import mate.repository.match.MatchUserRepository;
+import mate.repository.user.BasicRepository;
 import mate.repository.user.UserRepository;
-
-import javax.persistence.Id;
 
 @Service
 @Transactional
@@ -40,6 +39,13 @@ public class MatchService {
 	public void registerSurvey(MatchSurvey matchSurvey) {
 		User user = userRepository.findByIdx(matchSurvey.getUserIdx()).get();
 		List<SurveyResult> surveyResult = matchSurvey.getSurveyResult();
+
+		// 이미 해당 사용자가 MatchUser에 등록되어 있는지 확인
+		if (!matchUserRepository.findByUser(user).isPresent()) {
+			matchUserRepository.saveAndFlush(MatchUser.builder()
+				.user(user)
+				.build());
+		}
 
 		for (SurveyResult result : surveyResult) {
 			List<String> tagList = result.getTagList();
@@ -57,7 +63,15 @@ public class MatchService {
 	public void registerMatchUser(int userIdx) {
 		User user = userRepository.findByIdx(userIdx).get();
 
-		matchUserRepository.save(MatchUser.builder()
+		// 이미 해당 사용자가 MatchUser에 등록되어 있는지 확인
+		MatchUser existingMatchUser = matchUserRepository.findByUser(user).get();
+
+		// 이미 등록된 사용자
+		if (existingMatchUser != null) {
+			return;
+		}
+
+		matchUserRepository.saveAndFlush(MatchUser.builder()
 			.user(user)
 			.build());
 	}
@@ -79,7 +93,7 @@ public class MatchService {
 			tag.add(ma.getTag());
 		}
 
-		List<Object> list = matchRepository.listMatchUser(tag, tag.size());
+		List<Object> list = matchRepository.listMatchUser(tag, tag.size(), user.getGender());
 
 		List<MatchDto> output = new ArrayList<>();
 
@@ -104,6 +118,8 @@ public class MatchService {
 			// 현재 날짜 가져오기
 			LocalDate currentDate = LocalDate.now();
 
+			Optional<String> path = userRepository.findPath(Idx);
+
 			// 나이 계산
 			Period agePeriod = Period.between(birthDateFromDatabase, currentDate);
 			int age = agePeriod.getYears();
@@ -115,6 +131,7 @@ public class MatchService {
 			matchDto.setFace(face);
 			matchDto.setPercent(percent);
 			matchDto.setAge(age);
+			path.ifPresent(matchDto::setStoredFileName);
 
 			output.add(matchDto);
 
@@ -161,7 +178,7 @@ public class MatchService {
 		matchDetailDto.setSalary(salary);
 		matchDetailDto.setGender(gender);
 		matchDetailDto.setIntro(intro);
-
+		matchDetailDto.setStoredFileName(user.getStoredFileName());
 
 		return matchDetailDto;
 	}

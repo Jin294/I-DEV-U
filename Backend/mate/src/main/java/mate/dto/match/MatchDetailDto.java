@@ -29,5 +29,5 @@ public class MatchDetailDto {
     private String salary;
     private String gender;
     private String intro;
-
+    private String storedFileName;
 }

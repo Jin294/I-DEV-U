@@ -142,6 +142,8 @@ public class UserService {
             ss.setUserName(x.getFollowUser().getName());
             ss.setUserIntro(x.getFollowUser().getIntro());
             ss.setUserNickName(x.getFollowUser().getNickname());
+            Optional<String> path = userRepository.findPath(x.getFollowUser().getIdx());
+            path.ifPresent(ss::setStoredFileName);
             return ss;
         }).collect(Collectors.toList());
         Map<String, Object> map = new IdentityHashMap<>();
@@ -216,7 +218,7 @@ public class UserService {
         File file = new File(filePath);
         multipartFile.transferTo(file);
 
-        user.uploadFile(multipartFile.getOriginalFilename(), filePath);
+        user.uploadFile(multipartFile.getOriginalFilename(), loadPath);
         return Result.builder().status(ok().body("업로드 성공")).data(map).build();
     }
 
@@ -253,5 +255,13 @@ public class UserService {
             list.add(response);
         }
         return Result.builder().data(list).status(ResponseEntity.ok("닉네임 검색 결과")).build();
+    }
+    public ResponseEntity isAdmin(Integer userIdx) {
+        User user = userRepository.findByIdx(userIdx)
+                .orElseThrow(() -> new NotFoundException(NotFoundException.USER_NOT_FOUND));
+        if (user.getRole() != Role.ADMIN){
+            throw new NotFoundException(NotFoundException.USER_NOT_FOUND);
+        }
+        return ResponseEntity.ok("관리자 맞음");
     }
 }

@@ -15,6 +15,6 @@ public class ChatRoomCreateRequest {
     private Integer userIdx;
     private String title;
 
-    private LocalDateTime createdAt;
+//    private LocalDateTime createdAt;
 
 }

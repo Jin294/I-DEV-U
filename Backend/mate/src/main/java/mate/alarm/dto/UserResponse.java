@@ -29,6 +29,7 @@ public class UserResponse {
     private UserGender gender; // MALE, FEMALE
     private String intro;
     private List<BasicAnswerResponse> basicAnswerList = new ArrayList<>();
+    private String storedFileName;
 
     public static UserResponse from(User user){
 
@@ -40,6 +41,7 @@ public class UserResponse {
         userResponse.intro = user.getIntro();
         userResponse.email = user.getEmail();
         userResponse.basicAnswerList = BasicAnswerResponse.from(user.getBasicAnswerList());
+        userResponse.storedFileName = user.getStoredFileName();
 
         return userResponse;
     }

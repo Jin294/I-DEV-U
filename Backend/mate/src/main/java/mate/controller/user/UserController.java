@@ -51,6 +51,12 @@ public class UserController {
 		return ok(map);
 	}
 
+	@GetMapping("/admin/{userIdx}")
+	public ResponseEntity isAdmin(@PathVariable("userIdx") Integer userIdx){
+		return userService.isAdmin(userIdx);
+	}
+
+
 	/*
 	 * 회원가입
 	 */

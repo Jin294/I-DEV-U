@@ -12,7 +12,8 @@ public class AlarmRequest{
     private Integer toIdx;
 
     private AlarmType type;
+    private String comment;
 
-    private LocalDateTime createdAt;
+//    private LocalDateTime createdAt;
 
 }

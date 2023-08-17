@@ -14,5 +14,5 @@ public class ChatRoomUpdateRequest {
     private Integer userIdx;
     private String title;
 
-    private LocalDateTime updatedAt;
+//    private LocalDateTime updatedAt;
 }

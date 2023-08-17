@@ -2,7 +2,6 @@ package mate.service.project;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +12,8 @@ import mate.domain.project.ProjectLanguage;
 import mate.domain.project.ProjectParticipation;
 import mate.domain.project.ProjectTech;
 import mate.domain.user.User;
+import mate.domain.video.VideoParticipation;
+import mate.domain.video.VideoRoom;
 import mate.dto.project.ProjectDto;
 import mate.dto.project.ProjectParticipationDto;
 import mate.repository.project.ProjectLanguageRepository;
@@ -20,6 +21,8 @@ import mate.repository.project.ProjectParticipationRepository;
 import mate.repository.project.ProjectRepository;
 import mate.repository.project.ProjectTechRepository;
 import mate.repository.user.UserRepository;
+import mate.repository.video.VideoParticipationRepository;
+import mate.repository.video.VideoRepository;
 
 @Service
 @Transactional
@@ -31,6 +34,8 @@ public class ProjectService {
 	private final ProjectParticipationRepository projectParticipationRepository;
 	private final ProjectTechRepository projectTechRepository;
 	private final ProjectLanguageRepository projectLanguageRepository;
+	private final VideoRepository videoRepository;
+	private final VideoParticipationRepository videoParticipationRepository;
 
 	public User registerProject(ProjectDto projectDto) {
 		User user = userRepository.findById(projectDto.getUserIdx()).get();
@@ -41,10 +46,6 @@ public class ProjectService {
 			.content(projectDto.getContent())
 			.totalNum(projectDto.getTotalNum())
 			.nowNum(projectDto.getNowNum())
-			.front(projectDto.getFront())
-			.max_front(projectDto.getMax_front())
-			.back(projectDto.getBack())
-			.max_back(projectDto.getMax_back())
 			.session(projectDto.getSession())
 			.type(projectDto.getType()).build());
 
@@ -52,17 +53,17 @@ public class ProjectService {
 			.project(project)
 			.user(user).build());
 
-//		List<ProjectTech> techs = new ArrayList<>();
+		//		List<ProjectTech> techs = new ArrayList<>();
 
 		// 일단 비어있는 projectTechDto의 project에 방금 생성된 project 삽입
-//		for (ProjectTech tech : projectDto.getTechList()) {
-//			techs.add(ProjectTech.builder()
-//				.project(project)
-//				.tech(tech.getTech())
-//				.build());
-//		}
+		//		for (ProjectTech tech : projectDto.getTechList()) {
+		//			techs.add(ProjectTech.builder()
+		//				.project(project)
+		//				.tech(tech.getTech())
+		//				.build());
+		//		}
 
-//		projectTechRepository.saveAll(techs);
+		//		projectTechRepository.saveAll(techs);
 
 		List<ProjectLanguage> languages = new ArrayList<>();
 
@@ -85,20 +86,39 @@ public class ProjectService {
 		return project;
 	}
 
-	public void enterProject(ProjectParticipationDto dto) {
+	public int enterProject(ProjectParticipationDto dto) {
 		User user = userRepository.findByIdx(dto.getUserIdx()).get();
 		Project project = projectRepository.findById(dto.getProjectIdx()).get();
 
-		ProjectParticipation projectParticipation = projectParticipationRepository.save(ProjectParticipation.builder()
-			.project(project)
-			.user(user)
-			.build());
-		projectRepository.plusnowNum(project.getIdx());
+		if (projectParticipationRepository.findProjectParticipationByProjectAndUser(project, user) == null) {
+			ProjectParticipation projectParticipation = projectParticipationRepository.save(
+				ProjectParticipation.builder()
+					.project(project)
+					.user(user)
+					.build());
+			projectRepository.plusnowNum(project.getIdx());
+
+			VideoRoom videoRoom = videoRepository.findVideoRoomByIdx(project.getIdx());
+
+			// 비디오방에도 동시에 입장
+			videoParticipationRepository.saveAndFlush(VideoParticipation.builder()
+				.videoRoom(videoRoom)
+				.user(user)
+				.build());
+
+			return videoRoom.getIdx();
+		} else {
+			return 0;
+		}
 	}
 
 	public void leaveProject(int userIdx, int projectIdx) {
 		projectParticipationRepository.leaveProject(userIdx, projectIdx);
 		projectRepository.minusnowNum(projectIdx);
+
+		VideoRoom videoRoom = videoRepository.findVideoRoomByIdx(projectIdx);
+
+		videoParticipationRepository.deleteByUserIdxAndRoomIdx(videoRoom.getIdx(), userIdx);
 	}
 
 	public Project modifyProject(ProjectDto projectDto) {
@@ -151,24 +171,69 @@ public class ProjectService {
 		projectRepository.deleteById(projectIdx);
 	}
 
-	public List<Project> listProject(String keyword) {
-		if (keyword == null)
-			return projectRepository.findAll();
-		else
-			return projectRepository.findProjectsByTitleOrContent(keyword);
+	public List<ProjectDto> listProject(String keyword) {
+
+		List<ProjectDto> dto_list = new ArrayList<>();
+		List<Project> list = new ArrayList<>();
+
+		if (keyword == null) {
+			list = projectRepository.findAll();
+		} else {
+			list = projectRepository.findProjectsByTitleOrContent(keyword);
+		}
+
+		for (Project p : list) {
+			ProjectDto dto = new ProjectDto();
+
+			dto.setIdx(p.getIdx());
+			dto.setTitle(p.getTitle());
+			dto.setContent(p.getContent());
+			dto.setUserIdx(p.getManager().getIdx());
+			dto.setNickname(p.getManager().getNickname());
+			dto.setTotalNum(p.getTotalNum());
+			dto.setNowNum(p.getNowNum());
+			dto.setStatus(p.getStatus());
+			dto.setFront(p.getFront());
+			dto.setMax_front(p.getMax_front());
+			dto.setBack(p.getBack());
+			dto.setMax_back(p.getMax_back());
+			dto.setType(p.getType());
+			dto.setLanguageList(p.getProjectLanguages());
+			dto.setSession(p.getSession());
+
+			dto_list.add(dto);
+		}
+
+		return dto_list;
 	}
 
-	public String makeRoomCode() {
-		int leftLimit = 48; // numeral '0'
-		int rightLimit = 122; // letter 'z'
-		int targetStringLength = 10;
-		Random random = new Random();
+	public List<ProjectDto> filterProject(String type, List<String> languageList) {
+		List<ProjectDto> list = new ArrayList<>();
 
-		String generatedString = random.ints(leftLimit, rightLimit + 1)
-			.filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
-			.limit(targetStringLength)
-			.collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-			.toString();
-		return generatedString;
+		List<Project> result = projectRepository.findProjectsByFilter(languageList, type);
+
+		for (Project p : result) {
+			ProjectDto dto = new ProjectDto();
+
+			dto.setIdx(p.getIdx());
+			dto.setTitle(p.getTitle());
+			dto.setContent(p.getContent());
+			dto.setUserIdx(p.getManager().getIdx());
+			dto.setNickname(p.getManager().getNickname());
+			dto.setTotalNum(p.getTotalNum());
+			dto.setStatus(p.getStatus());
+			dto.setNowNum(p.getNowNum());
+			dto.setFront(p.getFront());
+			dto.setMax_front(p.getMax_front());
+			dto.setBack(p.getBack());
+			dto.setMax_back(p.getMax_back());
+			dto.setType(p.getType());
+			dto.setLanguageList(p.getProjectLanguages());
+			dto.setSession(p.getSession());
+
+			list.add(dto);
+		}
+
+		return list;
 	}
 }

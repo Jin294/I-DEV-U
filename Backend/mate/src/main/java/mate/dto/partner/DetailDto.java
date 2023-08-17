@@ -13,4 +13,5 @@ public class DetailDto {
 	private int age;
 	private String gender;
 	private List<String> techList;
+	private String storedFileName;
 }

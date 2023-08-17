@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,14 +44,16 @@ public class PartnerService {
                 continue;
             }
             List<String> language = basicRepository.findLanguage(Idx);
+			Optional<String> path = userRepository.findPath(Idx);
 
-            PartnerDto partnerDto = new PartnerDto();
+			PartnerDto partnerDto = new PartnerDto();
             partnerDto.setUserIdx(Idx);
             partnerDto.setName(name);
             partnerDto.setNickname(nickname);
             partnerDto.setPercent(percent);
             partnerDto.setInvite(invite);
             partnerDto.setLanguageList(language);
+			path.ifPresent(partnerDto::setStoredFileName);
 
 			list.add(partnerDto);
 		}
@@ -74,12 +77,14 @@ public class PartnerService {
             }
 
             List<String> language = basicRepository.findLanguage(Idx);
+			Optional<String> path = userRepository.findPath(Idx);
 
 			PartnerDto partnerDto = new PartnerDto();
 			partnerDto.setUserIdx(Idx);
 			partnerDto.setName(name);
 			partnerDto.setNickname(nickname);
 			partnerDto.setLanguageList(language);
+			path.ifPresent(partnerDto::setStoredFileName);
 
 			list.add(partnerDto);
 		}
@@ -109,6 +114,7 @@ public class PartnerService {
 		detailPartner.setNickname(user.getNickname());
 		detailPartner.setIntro(user.getIntro());
 		detailPartner.setTechList(techList);
+		detailPartner.setStoredFileName(user.getStoredFileName());
 
 		// 생년월일 데이터베이스로부터 가져오는 부분을 시뮬레이션합니다.
 		LocalDate birthDateFromDatabase = userRepository.findBirthByUserId(userIdx);

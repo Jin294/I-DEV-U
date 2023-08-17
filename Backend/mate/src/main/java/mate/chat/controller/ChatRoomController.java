@@ -21,7 +21,6 @@ public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
 
-
     @GetMapping("/list/all")
     public Result findAll(){
         return chatRoomService.findAll();

@@ -1,5 +1,5 @@
 package mate.alarm.domain;
 
 public enum AlarmType {
-    CHAT, MATE, PROJECT
+    CHAT, MATE, PROJECT, SOGAE
 }

@@ -56,15 +56,15 @@ public class ChatRoom {
         ChatRoom chatRoom = new ChatRoom();
         chatRoom.title = chatRoomCreateRequest.getTitle();
         chatRoom.type = ChatRoomStatus.LACK;
-        chatRoom.createdAt = chatRoomCreateRequest.getCreatedAt();
-        chatRoom.updatedAt = chatRoomCreateRequest.getCreatedAt();
+        chatRoom.createdAt = LocalDateTime.now();
+        chatRoom.updatedAt = LocalDateTime.now();
         chatRoom.chatRoomUsers.add(ChatParticipation.createChatRoomUser(Role.MASTER, user, chatRoom));
         chatRoom.userCount++;
         return chatRoom;
     }
     public void update(ChatRoomUpdateRequest chatRoomUpdateRequest){
         this.title = chatRoomUpdateRequest.getTitle();
-        this.updatedAt = chatRoomUpdateRequest.getUpdatedAt();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void updateTime(LocalDateTime updatedAt){
@@ -99,17 +99,20 @@ public class ChatRoom {
         this.type = ChatRoomStatus.LACK;
     }
 
-    public void deleteChatRoomUser(User user) {
+    public boolean deleteChatRoomUser(User user) {
         List<ChatParticipation> result = chatRoomUsers.stream()
                 .filter(chatRoomUser -> chatRoomUser.getUser().getIdx().equals(user.getIdx()))
                 .collect(Collectors.toList());
 
-        if (result.size() == 0) {
-            throw new NotFoundException("존재하지 않는 참가자입니다.");
+        if (result.isEmpty()) {
+//            throw new NotFoundException("존재하지 않는 참가자입니다.");
+            return false;
         }
 
+
         if(result.get(0).getRole() == Role.MASTER) {
-            throw new ExistException("채팅방 생성자는 채팅방을 나갈 수 없습니다.");
+//            throw new ExistException("채팅방 생성자는 채팅방을 나갈 수 없습니다.");
+            return false;
         }
 
         chatRoomUsers.remove(result.get(0));
@@ -117,6 +120,7 @@ public class ChatRoom {
 //        if (chatRoomUsers.size() < LIMIT) {
 //            this.status = ChatRoomStatus.LACK;
 //        }
+        return true;
     }
 
 

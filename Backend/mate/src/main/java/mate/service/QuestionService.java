@@ -83,9 +83,9 @@ public class QuestionService {
         return questionRepository.findByContentContainingOrderByIdxDesc(keyWord);
     }
 
-//    public List<QuestionBoard> findQuestionByName(String name) {
-//        return questionRepository.findByNameOrderByIdxDesc(name);
-//    }
+    public List<QuestionBoard> findQuestionByName(String name) {
+        return questionRepository.findByNameOrderByIdxDesc(name);
+    }
 
     public void writeQuestionBoardLike(QuestionBoardLike like) {
         questionLikeRepository.save(like);

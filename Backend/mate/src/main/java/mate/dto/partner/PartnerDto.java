@@ -12,4 +12,6 @@ public class PartnerDto {
 	private long percent;
 	private String invite;
 	private List<String> languageList;
+	private String storedFileName;
+
 }

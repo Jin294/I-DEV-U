@@ -107,16 +107,16 @@ public class QuestionController {
         return ResponseEntity.ok(map);
     }
 
-//    @GetMapping("/find/user/{name}")
-//    public ResponseEntity<Map<String, Object>> findQuestionByName(
-//            @PathVariable(value = "name", required = false) String name) {
-//        System.out.println("name = " + name);
-//        Map<String, Object> map = new HashMap<>();
-//
-//        map.put("resmsg", "Q&A 글 리스트 조회 성공");
-//        map.put("Q&A", questionService.findQuestionByName(name));
-//        return ResponseEntity.ok(map);
-//    }
+    @GetMapping("/find/user/{name}")
+    public ResponseEntity<Map<String, Object>> findQuestionByName(
+            @PathVariable(value = "name", required = false) String name) {
+        System.out.println("name = " + name);
+        Map<String, Object> map = new HashMap<>();
+
+        map.put("resmsg", "Q&A 글 리스트 조회 성공");
+        map.put("Q&A", questionService.findQuestionByName(name));
+        return ResponseEntity.ok(map);
+    }
 
     @PostMapping("/like")
     public ResponseEntity<Map<String, Object>> likeQuestion(@RequestBody QuestionBoardLike like) {

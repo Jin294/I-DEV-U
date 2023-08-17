@@ -10,4 +10,5 @@ public class UserFollowDto {
     private String userName;
     private String userIntro;
     private String userNickName;
+    private String storedFileName;
 }

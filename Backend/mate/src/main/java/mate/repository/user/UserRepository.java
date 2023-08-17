@@ -47,5 +47,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 	@Query("select distinct u from User u join fetch u.basicAnswerList where u.email like %:email%")
 	Optional<List<User>> findLikeEmail(@Param("email") String email);
 
+	@Query("select distinct u.storedFileName from User u where u.idx = :idx")
+	Optional<String> findPath(@Param("idx") Integer idx);
+
 
 }

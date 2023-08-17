@@ -9,8 +9,9 @@ import java.time.LocalDateTime;
 public class AlarmProjectRequest {
     private Integer fromIdx;
     private AlarmType type;
-    private LocalDateTime createdAt;
+//    private LocalDateTime createdAt;
     private Integer projectIdx;
+    private String comment;
 
 }
 

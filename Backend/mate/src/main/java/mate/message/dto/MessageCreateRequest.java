@@ -21,6 +21,6 @@ public class MessageCreateRequest {
     private String message;
 
 
-    private LocalDateTime createdAt;
+//    private LocalDateTime createdAt;
 
 }

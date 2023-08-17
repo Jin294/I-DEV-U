@@ -12,4 +12,5 @@ public class MatchDto {
     private String face;
     private int age;
     private long percent;
+    private String storedFileName;
 }

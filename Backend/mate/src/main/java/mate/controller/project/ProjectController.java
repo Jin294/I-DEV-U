@@ -61,8 +61,13 @@ public class ProjectController {
 		Map<String, Object> map = new HashMap<>();
 
 		try {
-			projectService.enterProject(projectParticipationDto);
-			map.put("resmsg", "프로젝트 입장 성공");
+			int videoRoomIdx = projectService.enterProject(projectParticipationDto);
+			if (videoRoomIdx == 0)
+				map.put("resmsg", "이미 입장한 프로젝트입니다");
+			else {
+				map.put("videoroomIdx", videoRoomIdx);
+				map.put("resmsg", "프로젝트 입장 성공");
+			}
 		} catch (Exception e) {
 			map.put("resmsg", "프로젝트 입장 실패");
 		}
@@ -119,8 +124,25 @@ public class ProjectController {
 		Map<String, Object> map = new HashMap<>();
 
 		try {
-			List<Project> list = projectService.listProject(keyword);
+			List<ProjectDto> list = projectService.listProject(keyword);
 			map.put("list", list);
+			map.put("resmsg", "프로젝트 리스트 조회 성공");
+		} catch (Exception e) {
+			map.put("resmsg", "프로젝트 리스트 조회 실패");
+		}
+
+		return ResponseEntity.ok(map);
+	}
+
+	@PostMapping("/filter")
+	public ResponseEntity<Map<String, Object>> filterProject(@RequestBody Map<String, Object> input) {
+		Map<String, Object> map = new HashMap<>();
+
+		String type = (String)input.get("type");
+		List<String> languageList = (List<String>)input.get("languageList");
+
+		try {
+			map.put("list", projectService.filterProject(type, languageList));
 			map.put("resmsg", "프로젝트 리스트 조회 성공");
 		} catch (Exception e) {
 			map.put("resmsg", "프로젝트 리스트 조회 실패");

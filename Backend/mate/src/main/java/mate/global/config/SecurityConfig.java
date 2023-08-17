@@ -66,8 +66,7 @@ public class SecurityConfig {
                 // 기본 페이지, css, image, js 하위 폴더에 있는 자료들은 모두 접근 가능, h2-console에 접근 가능
                 .antMatchers("/","/css/**","/images/**","/js/**","/favicon.ico","/h2-console/**").permitAll()
                 .antMatchers("/user/signUp/**").permitAll() // 회원가입 접근 가능
-                .antMatchers("/question/**").permitAll() // 회원가입 접근 가능
-                .antMatchers("/ws-stomp/**").permitAll() // 회원가입 접근 가능
+                .antMatchers("/ws-stomp/**").permitAll() // 웹 소켓 연결 접근 가능
                 .antMatchers("/img/**").permitAll()
                 .anyRequest().authenticated() // 위의 경로 이외에는 모두 인증된 사용자만 접근 가능
                 .and();
@@ -134,8 +133,6 @@ public class SecurityConfig {
         customJsonUsernamePasswordLoginFilter.setAuthenticationFailureHandler(loginFailureHandler());
         return customJsonUsernamePasswordLoginFilter;
     }
-
-    @Bean
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
 //        JwtAuthenticationProcessingFilter jwtAuthenticationFilter = new JwtAuthenticationProcessingFilter(jwtService, userRepository, redisService);
         JwtAuthenticationProcessingFilter jwtAuthenticationFilter = new JwtAuthenticationProcessingFilter(jwtService, userRepository);

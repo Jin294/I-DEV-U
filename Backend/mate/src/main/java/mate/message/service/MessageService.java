@@ -51,10 +51,10 @@ public class MessageService {
         ChatRoom findChatRoom = chatRoomRepository.findByIdx(request.getRoomIdx())
                 .orElseThrow(() -> new NotFoundException(CHAT_ROOM_NOT_FOUND));
 
-        findChatRoom.updateTime(request.getCreatedAt());
+        findChatRoom.updateTime(LocalDateTime.now());
 
         ChatMessage message = ChatMessage.createMessage(
-                request.getRoomIdx(), request.getUserIdx(), user.getNickname(),request.getMessage(), request.getCreatedAt());
+                request.getRoomIdx(), request.getUserIdx(), user.getNickname(),request.getMessage(), LocalDateTime.now());
         messageRepository.save(message);
 //        redisTemplate.convertAndSend(channelTopic.getTopic(), MessageResponse.from(message));
         messageListener.sendMessage(message);

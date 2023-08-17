@@ -18,6 +18,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -89,12 +90,12 @@ public class ChatRoomService {
         ChatRoom findChatRoom = chatRoomRepository.findWithChatRoomUsersByIdx(roomIdx)
                 .orElseThrow(() -> new NotFoundException(CHAT_ROOM_NOT_FOUND));
 
-        findChatRoom.updateTime(chatRoomUserRequest.getUpdatedAt());
+        findChatRoom.updateTime(LocalDateTime.now());
 
         User user = userRepository.findByIdx(chatRoomUserRequest.getUserIdx())
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
 
-        findChatRoom.addChatRoomUser(user, chatRoomUserRequest.getUpdatedAt());
+        findChatRoom.addChatRoomUser(user, LocalDateTime.now());
         return Result.builder().status(ResponseEntity.ok(roomIdx + " 번 방 " + user.getNickname() + " 입장")).build();
     }
 
@@ -105,10 +106,9 @@ public class ChatRoomService {
 
         User user = userRepository.findByIdx(userIdx)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
-
-        findChatRoom.deleteChatRoomUser(user);
-
-        return Result.builder().status(ResponseEntity.ok(roomIdx + "번 방 " + user.getNickname() + " 퇴장")).build();
+        ChatRoomResponse response = ChatRoomResponse.from(findChatRoom);
+        if (!findChatRoom.deleteChatRoomUser(user)) return Result.builder().data(response).status(ResponseEntity.ok("유저 정보를 확인하세요!")).build();
+        return Result.builder().data(response).status(ResponseEntity.ok(roomIdx + "번 방 " + user.getNickname() + " 퇴장")).build();
     }
 
     public Result findAll() {
