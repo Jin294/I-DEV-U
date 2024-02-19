@@ -72,6 +72,7 @@
 
 <details>
 <summary>3. 프로젝트</summary>
+ 
 ![Alt text](readme사진/image-8.png)
 ![Alt text](readme사진/image-9.png)
 ![Alt text](readme사진/image-10.png)
@@ -80,6 +81,7 @@
 
 <details>
 <summary>4. 채팅</summary>
+ 
 ![Alt text](readme사진/image-12.png)
 ![Alt text](readme사진/image-13.png)
 ![Alt text](readme사진/image-14.png)
@@ -87,6 +89,7 @@
 
 <details>
 <summary>5. SSAFY-TOWN</summary>
+ 
 ![Alt text](readme사진/image-15.png)
 ![Alt text](readme사진/image-20.png)
 ![Alt text](readme사진/image-16.png)
